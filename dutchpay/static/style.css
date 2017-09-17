@@ -1,9 +1,11 @@
 table.paleBlueRows {
   font-family: "Times New Roman", Times, serif;
+  font-size: 30px;
   border: 1px solid #FFFFFF;
-  width: 100%;
   text-align: center;
   border-collapse: collapse;
+  overflow-x: auto;
+  display: block;
 }
 
 table.paleBlueRows td,
@@ -13,7 +15,7 @@ table.paleBlueRows th {
 }
 
 table.paleBlueRows tbody td {
-  font-size: 13px;
+  font-size: 100%;
 }
 
 table.paleBlueRows tr:nth-child(even) {
@@ -21,15 +23,15 @@ table.paleBlueRows tr:nth-child(even) {
 }
 
 table.paleBlueRows thead {
+  font-size: 120%;
+  font-weight: bold;
+  text-align: center;
   background: #0B6FA4;
   border-bottom: 5px solid #FFFFFF;
 }
 
 table.paleBlueRows thead th {
-  font-size: 17px;
-  font-weight: bold;
   color: #FFFFFF;
-  text-align: center;
   border-left: 2px solid #FFFFFF;
 }
 
@@ -43,13 +45,9 @@ table.paleBlueRows thead tr:nth-child(even) th {
 }
 
 table.paleBlueRows tfoot {
-  font-size: 14px;
+  font-size: 120%;
   font-weight: bold;
   color: #333333;
   background: #D0E4F5;
   border-top: 3px solid #444444;
-}
-
-table.paleBlueRows tfoot td {
-  font-size: 14px;
 }

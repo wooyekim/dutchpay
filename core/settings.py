@@ -25,7 +25,9 @@ SECRET_KEY = 'v9uc_k)ca7%n6ehjj04$%-#96!*8&^f9cc%!atq!)tz+!@w4)%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'wooyekim.wo.tc',
+]
 
 
 # Application definition
