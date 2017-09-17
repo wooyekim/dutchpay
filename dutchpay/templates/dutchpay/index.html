@@ -1,0 +1,9 @@
+{% if payment_list %}
+  <ul>
+    {% for p in payment_list %}
+      <li><a href="/dutchpay/{{ p.id }}/">{{ p.name }} at {{ p.date }}</a></li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No payments are available</p>
+{% endif %}

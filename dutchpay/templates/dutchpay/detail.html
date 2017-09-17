@@ -1,0 +1,47 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
+
+<h1>{{ meeting.name }} @ {{ meeting.date }}</h1>
+
+<table class="paleBlueRows">
+  <thead>
+    <tr>
+      <th rowspan="2" width=50px>정산완료</th>
+      <th rowspan="2">이름</th>
+      {% for col, width in table.header.0 %}
+        <th colspan="{{ width }}">{{ col }}</th>
+      {% endfor %}
+      <th rowspan="2">총합</th>
+      <th rowspan="2">최종</th>
+    </tr>
+    <tr>
+      {% for col, width in table.header.1 %}
+        <th>{{ col }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in table.body %}
+      <tr>
+        {% for col in row %}
+          <td>{{ col }}</td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th rowspan="2"></th>
+      <td rowspan="2">총합</td>
+      {% for col, width in table.footer.0 %}
+        <td colspan="{{ width }}">{{ col }}</td>
+      {% endfor %}
+      <td rowspan="2">{{ table.total_sum }}</td>
+    </tr>
+    <tr>
+      {% for col, width in table.footer.1 %}
+        <td colspan="{{ width }}">{{ col }}</td>
+      {% endfor %}
+    </tr>
+  </tfoot>
+</table>
