@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.defaulttags import register
 import math
 
@@ -79,3 +79,14 @@ def detail(request, payment_id):
   except Meeting.DoesNotExist:
     raise Http404("Meeting does not exist")
   return render(request, 'dutchpay/detail.html', context)
+
+from .forms import PersonForm
+def person_new(request):
+  if request.method == 'POST':
+    form = PersonForm(request.POST)
+    if form.is_valid():
+      person = form.save()
+      return redirect('index')
+  else:
+    form = PersonForm()
+  return render(request, 'dutchpay/person_edit.html', {'form': form})
