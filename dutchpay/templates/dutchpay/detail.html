@@ -1,6 +1,6 @@
-{% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
+{% extends 'dutchpay/base.html' %}
 
+{% block content %}
 <h1>{{ meeting.name }} @ {{ meeting.date }}</h1>
 
 <table class="paleBlueRows">
@@ -45,3 +45,4 @@
     </tr>
   </tfoot>
 </table>
+{% endblock %}
