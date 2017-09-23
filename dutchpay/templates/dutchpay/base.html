@@ -6,11 +6,14 @@
   src="https://code.jquery.com/jquery-3.2.1.min.js"
   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
   crossorigin="anonymous"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
   </head>
   <body>
     {% block content %}
     {% endblock %}
-    <a href="{% url 'person_new' %}">Add person</a>
+    <a href="{% url 'person_new' %}">Add Person</a>
+    <a href="{% url 'meeting_new' %}">Add Meeting</a>
   </body>
 </html>

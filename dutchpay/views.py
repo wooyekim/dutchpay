@@ -1,9 +1,10 @@
 from django.http import HttpResponse
+from django.db import transaction, IntegrityError
 from django.shortcuts import render, redirect
 from django.template.defaulttags import register
 import math
 
-from .models import Meeting, Consume, Item, Place, Participation
+from .models import Meeting, Consume, Item, Place, Participation, Person
 
 def index(request):
   payment_list = Meeting.objects.order_by('-date')
@@ -80,7 +81,8 @@ def detail(request, payment_id):
     raise Http404("Meeting does not exist")
   return render(request, 'dutchpay/detail.html', context)
 
-from .forms import PersonForm
+from .forms import PersonForm, MeetingForm
+
 def person_new(request):
   if request.method == 'POST':
     form = PersonForm(request.POST)
@@ -90,3 +92,100 @@ def person_new(request):
   else:
     form = PersonForm()
   return render(request, 'dutchpay/person_edit.html', {'form': form})
+
+def meeting_new(request):
+  if request.method == 'POST':
+    sid = transaction.savepoint()
+    try:
+      meeting = parseMeeting(request)
+      meeting.save()
+      places = parsePlaces(request, meeting)
+      for k, place in places.items():
+        place.save()
+      items = parseItems(request, places)
+      for k, item in items.items():
+        item.save()
+      participations = parseParticipations(request, meeting)
+      for k, participation in participations.items():
+        participation.save()
+      consumes = parseConsumes(request, items, participations)
+      for consume in consumes:
+        consume.save()
+      transaction.savepoint_commit(sid)
+    except IntegrityError:
+      transaction.savepoint_rollback(sid)
+      raise;
+    context = {}
+    context['meeting'] = meeting
+    context['table'] = Table(meeting)
+    return render(request, 'dutchpay/detail.html', context)
+  else:
+    form = MeetingForm()
+    return render(request, 'dutchpay/meeting_edit.html', {'form': form})
+
+def parseMeeting(request):
+  # Parse meeting
+  meeting = Meeting()
+  meeting.name = request.POST['name']
+  meeting.date = request.POST['date']
+  return meeting
+
+def parsePlaces(request, meeting):
+  # Parse places
+  places = {}
+  for name, value in request.POST.items():
+    if name.startswith('place_'):
+      parsed_name = name.split('_')
+      key = parsed_name[1]
+      if key not in places:
+        places[key] = Place(meeting = meeting)
+      setattr(places[key], parsed_name[2], value)
+  return places
+
+def parseItems(request, places):
+  # Parse items
+  items = {}
+  for name, value in request.POST.items():
+    if name.startswith('item_'):
+      parsed_name = name.split('_')
+      key = parsed_name[1]
+      if key not in items:
+        items[key] = Item()
+      item = items[key]
+      if parsed_name[2] == 'place':
+        item.place = places[value]
+      else:
+        setattr(item, parsed_name[2], value)
+  return items
+
+def parseParticipations(request, meeting):
+  # Parse participations
+  participations = {}
+  for name, value in request.POST.items():
+    if name.startswith('participation_'):
+      parsed_name = name.split('_')
+      key = parsed_name[1]
+      if key not in participations:
+        participations[key] = Participation()
+        participations[key].meeting = meeting
+      part = participations[key]
+      if parsed_name[2] == 'person':
+        part.person = Person.objects.get(pk=int(value))
+      else:
+        setattr(item, parsed_name[2], value)
+  return participations
+
+def parseConsumes(request, items, participations):
+  # Parse consumes
+  consumes = []
+  for name, value in request.POST.items():
+    if name.startswith('consume_'):
+      parsed_name = name.split('_')
+      item_key = parsed_name[1]
+      participation_key = parsed_name[2]
+      consume = Consume()
+      consume.item = items[item_key]
+      consume.participation = participations[participation_key]
+      consume.weight = value
+      consumes.append(consume)
+  return consumes

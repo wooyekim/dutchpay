@@ -1,0 +1,214 @@
+{% extends 'dutchpay/base.html' %}
+
+{% block content %}
+{% load staticfiles %}
+{% load widget_tweaks %}
+<h1>New Meeting</h1>
+<form method='POST' class='post-form'>
+  {% csrf_token %}
+  {% render_field form.name placeholder="모임 이름" %}
+  {% render_field form.date %}
+  <table id='tt' class="responstable">
+    <thead>
+      <tr>
+        <td rowspan='2'>정산완료</td>
+        <td rowspan='2'>이름</td>
+        <td rowspan='2'>
+          <a id='add_place' class='img_button'>
+            <div><img src="{% static 'plus_1.png' %}"></div>
+            <div><img src="{% static 'plus_2.png' %}"></div>
+          </a>
+        </td>
+      </tr>
+      <tr>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan='2'>
+          <a id='add_participation' class='img_button'>
+            <div><img src="{% static 'plus_1.png' %}"></div>
+            <div><img src="{% static 'plus_2.png' %}"></div>
+          </a>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+  <div style='display:none'>
+    <div id='remove_sample'>
+      <a class='img_button'>
+        <div><img src="{% static 'minus_1.png' %}"></div>
+        <div><img src="{% static 'minus_2.png' %}"></div>
+      </a>
+    </div>
+    <div id = 'add_sample'>
+      <a class='img_button'>
+        <div><img src="{% static 'plus_1.png' %}"></div>
+        <div><img src="{% static 'plus_2.png' %}"></div>
+      </a>
+    </div>
+    <div id = 'person_sample'>
+      {% render_field form.people %}
+    </div>
+  </div>
+  <button type='submit'>Save</button>
+</form>
+<script type='text/javascript'>
+$(document).ready(function() {
+  $('.datepicker').datepicker();
+});
+
+var id = 0;
+var place = {}
+var items = {};
+
+function get_input_for_weight(place_id, item_id, person_id) {
+  return $("<input>").attr('type', 'number')
+                     .attr('min', '0')
+                     .attr('placeholder', '가중치')
+                     .attr('name', "consume_" + item_id + "_" + person_id)
+                     .attr('data-place', place_id)
+                     .attr('data-item', item_id);
+}
+
+function add_participation() {
+  var row = $('#tt > thead > tr').eq(1).clone();
+  row.children().each(function(i) {
+    $(this).empty();
+    if (!$(this).next().is('td')) return;
+    var place_id = $(this).attr('data-place');
+    var item_id = $(this).attr('data-item');
+    if ($(this).attr('data-place') != $(this).next().attr('data-place')) return;
+    $(this).append(get_input_for_weight(place_id, item_id, id));
+  });
+  row.attr('data-participation', id);
+
+  var td = $("<td></td>");
+  var input = $("#person_sample").clone();
+  input.find('select').attr('name', 'participation_' + id + '_person');
+  td.append(input);
+  row.prepend(td);
+  var link = $('#remove_sample').clone();
+  link.attr('onclick', 'remove_participation(this)');
+  td.append(link);
+  row.prepend(td);
+
+  td = $("<td></td>");
+  input = $("<input>").attr('type', 'checkbox')
+                      .attr('name', 'participation_' + id + '_cleared');
+  td.append(input);
+  row.prepend(td);
+
+  $('#tt > tbody').append(row);
+  ++id;
+}
+
+function add_place() {
+  var td = $("<td colspan='1' data-place='" + id + "'></td>");
+  var input = $("<input type='text' placeholder='장소'>");
+  input.attr('name', 'place_' + id + '_name');
+  td.append(input);
+  var link = $('#remove_sample').clone();
+  link.attr('onclick', 'remove_place(this)');
+  td.append(link);
+  td.insertBefore('#tt > thead > tr:first-child > td:last-child')
+
+  td = $("<td data-place='" + id + "'></td>");
+  link = $('#add_sample').clone();
+  link.attr('onclick', 'add_item(this)');
+  td.append(link);
+  if ($('#tt > thead > tr:last-child > td').length == 0)
+    $('#tt > thead > tr:last-child').append(td);
+  else
+    td.insertAfter('#tt > thead > tr:last-child > td:last-child');
+
+  td = $("<td data-place='" + id + "'></td>");
+  $('#tt > tbody > tr').each(function(i) {$(this).append(td.clone()); });
+  items[id] = 0;
+  ++id;
+}
+
+function add_item(obj) {
+  // Adjust colspan for the corresponding place
+  var place_id = parseInt($(obj).parent().attr('data-place'));
+  $("#tt > thead > tr:first-child > td[data-place='" + place_id + "']").attr('colspan', items[place_id] + 2);
+  place[id] = place_id;
+  // Add new item row in header
+  var td = $("<td data-place='" + place_id + "' data-item='" + id + "'></td>");
+  td.append($("<input>").attr('type', 'hidden')
+                        .attr('name', 'item_' + id + '_place')
+                        .attr('value', place_id));
+  var div = $("<div></div>");
+  var input = $("<input>").attr('type', 'text')
+                          .attr('name', 'item_' + id + "_name");
+  var label = $("<label>품목:</label>");
+  label.append(input);
+  div.append(label);
+  div.append("<br/>");
+
+  input = $("<input>").attr('type', 'number')
+                      .attr('name', 'item_' + id + '_price')
+                      .attr('min', 0)
+                      .attr('data-item', id)
+  label = $("<label>가격:</label>");
+  label.append(input);
+  div.append(label);
+  div.append("<br/>");
+
+  input = $("<input>").attr('type', 'number')
+                      .attr('name', 'item_' + id + '_quantity')
+                      .attr('min', 0)
+                      .attr('data-item', id)
+  label = $("<label>개수:</label>");
+  label.append(input);
+  div.append(label);
+  td.append(div)
+
+  var link = $('#remove_sample').clone();
+  link.attr('onclick', 'remove_item(this)');
+  td.append(link);
+  td.insertBefore("#tt > thead > tr:last-child > td[data-place='" + place_id +"']:last");
+  // Add new item row for each person
+  var tbody = $('#tt > tbody');
+  tbody.children().each(function(i) {
+    var prev_item = $(this).find("td[data-place='" + place_id + "']:last");
+    var new_td = td.clone();
+    new_td.children().each(function(i) {
+      $(this).empty();
+    });
+    var person_id = $(this).attr('data-participation');
+    new_td.append(get_input_for_weight(place_id, id, person_id))
+    new_td.insertBefore(prev_item);
+  });
+  ++id;
+  ++items[place_id];
+  $(obj).prev().val('');
+}
+
+function remove_participation(obj) {
+  var id = $(obj).parent().parent().attr('data-participation');
+  $("tr[data-participation='" + id + "']").remove()
+}
+
+function remove_place(obj) {
+  var id = $(obj).parent().attr('data-place');
+  $("td[data-place='" + id + "']").remove()
+  delete items[id];
+}
+
+function remove_item(obj) {
+  var id = $(obj).parent().attr('data-item');
+  $("td[data-item='" + id + "']").remove()
+  // Adjust place colspan
+  place_id = place[id];
+  var thead = $('#tt > thead > tr');
+  var place_th = thead.eq(0).find("td[data-place='" + place_id + "']")
+  place_th.attr('colspan', items[place_id]--);
+}
+
+$('#add_participation').click(function(){add_participation();});
+$('#add_place').click(function(){add_place();});
+</script>
+{% endblock %}
