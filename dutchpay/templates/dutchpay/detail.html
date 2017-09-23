@@ -13,6 +13,7 @@
       {% endfor %}
       <th rowspan="2">총합</th>
       <th rowspan="2">최종</th>
+      <th rowspan="2" width=120px>이름</th>
     </tr>
     <tr>
       {% for col, width in table.header.1 %}
@@ -26,6 +27,7 @@
         {% for col in row %}
           <td>{{ col }}</td>
         {% endfor %}
+        <td>{{ row.1 }}</td>
       </tr>
     {% endfor %}
   </tbody>

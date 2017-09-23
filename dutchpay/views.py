@@ -171,14 +171,18 @@ def parseParticipations(request, meeting):
       part = participations[key]
       if parsed_name[2] == 'person':
         part.person = Person.objects.get(pk=int(value))
+      elif parsed_name[2] == 'cleared':
+        part.cleared = True if value == 'on' else False
       else:
-        setattr(item, parsed_name[2], value)
+        setattr(part, parsed_name[2], value)
   return participations
 
 def parseConsumes(request, items, participations):
   # Parse consumes
   consumes = []
   for name, value in request.POST.items():
+    if value == '' or value == '0':
+        continue
     if name.startswith('consume_'):
       parsed_name = name.split('_')
       item_key = parsed_name[1]
